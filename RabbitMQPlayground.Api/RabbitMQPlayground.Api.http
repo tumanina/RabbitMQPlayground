@@ -1,0 +1,6 @@
+@RabbitMQPlayground.Api_HostAddress = http://localhost:5168
+
+GET {{RabbitMQPlayground.Api_HostAddress}}/messages/
+Accept: application/json
+
+###

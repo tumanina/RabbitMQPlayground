@@ -1,0 +1,6 @@
+services:
+  rabbitmqplayground.api:
+    image: ${DOCKER_REGISTRY-}rabbitmqplaygroundapi
+    build:
+      context: .
+      dockerfile: RabbitMQPlayground.Api/Dockerfile
