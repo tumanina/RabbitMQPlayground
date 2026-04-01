@@ -4,5 +4,5 @@ namespace RabbitMQPlayground.Producer;
 
 public interface IProducer
 {
-    public Task SendMessage(string message);
+    public Task SendMessage(string queueName, string message);
 }

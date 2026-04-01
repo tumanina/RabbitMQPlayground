@@ -17,7 +17,7 @@ public class MessageController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> SendMessage([FromBody] string message)
     {
-        await _producer.SendMessage(message);
+        await _producer.SendMessage("test", message);
 
         return Ok();
     }
