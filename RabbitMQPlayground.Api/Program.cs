@@ -1,3 +1,7 @@
+using OpenTelemetry.Logs;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using RabbitMQPlayground.Configuration;
 using RabbitMQPlayground.Producer;
 
@@ -17,13 +21,24 @@ builder.Services.AddScoped<MessageProducer>();
 builder.Services.AddControllers();
 builder.Services.AddSwaggerGen();
 
+var telemetryConfiguration = configuration.GetSection(nameof(TelemetryConfiguration)).Get<TelemetryConfiguration>();
+builder.Services.AddOpenTelemetry().WithTracing(tracing => tracing
+            .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(builder.Environment.ApplicationName))
+            .AddAspNetCoreInstrumentation()
+            .AddHttpClientInstrumentation()
+            .AddConsoleExporter()
+            .AddOtlpExporter(opts => { opts.Endpoint = new Uri(telemetryConfiguration.Endpoint); }))
+          .WithMetrics(metrics => metrics
+             .AddAspNetCoreInstrumentation()
+             .AddConsoleExporter());
+
 var app = builder.Build();
 
 IEndpointConventionBuilder endpointConventionBuilder = app.MapOpenApi();
 app.UseSwagger();
 app.UseSwaggerUI(options =>
 {
-    options.DocumentTitle = "My API Explorer";
+    options.DocumentTitle = "API Explorer";
     options.SwaggerEndpoint("/swagger/v1/swagger.json", "API v1");
 });
 
