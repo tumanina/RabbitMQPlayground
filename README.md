@@ -40,6 +40,8 @@ Open UI and open queue `test`, then Get messages and see text that was sent.
 
 Run `docker-compose up`
 
+or `docker compose up --build` if something in code was changed and images have to be recreated.
+
 <img width="1318" height="719" alt="image" src="https://github.com/user-attachments/assets/7d1715bf-db8a-4777-93c1-2f85b6c7c043" />
 
 API: https://localhost:64671/swagger/index.html
