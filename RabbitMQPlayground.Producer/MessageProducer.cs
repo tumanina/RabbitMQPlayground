@@ -21,7 +21,6 @@ public class MessageProducer: IProducer, IDisposable
         {
             var factory = new ConnectionFactory 
             { 
-                ClientProvidedName = _configuration.ClientProvidedName,
                 HostName = _configuration.HostName,
                 Port = _configuration.Port
             };

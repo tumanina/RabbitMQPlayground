@@ -22,15 +22,16 @@ builder.Services.AddControllers();
 builder.Services.AddSwaggerGen();
 
 var telemetryConfiguration = configuration.GetSection(nameof(TelemetryConfiguration)).Get<TelemetryConfiguration>();
-builder.Services.AddOpenTelemetry().WithTracing(tracing => tracing
-            .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(builder.Environment.ApplicationName))
-            .AddAspNetCoreInstrumentation()
-            .AddHttpClientInstrumentation()
-            .AddConsoleExporter()
-            .AddOtlpExporter(opts => { opts.Endpoint = new Uri(telemetryConfiguration.Endpoint); }))
-          .WithMetrics(metrics => metrics
-             .AddAspNetCoreInstrumentation()
-             .AddConsoleExporter());
+builder.Services.AddOpenTelemetry()
+    .WithTracing(tracing => tracing
+        .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(builder.Environment.ApplicationName))
+        .AddAspNetCoreInstrumentation()
+        .AddHttpClientInstrumentation()
+        .AddConsoleExporter()
+        .AddOtlpExporter(opts => { opts.Endpoint = new Uri(telemetryConfiguration.Endpoint); }))
+    .WithMetrics(metrics => metrics
+        .AddAspNetCoreInstrumentation()
+        .AddConsoleExporter());
 
 var app = builder.Build();
 

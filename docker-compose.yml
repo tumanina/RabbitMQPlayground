@@ -3,20 +3,24 @@ services:
     build:
       context: .
       dockerfile: RabbitMQPlayground.Api/Dockerfile
+    container_name: playground-api
     ports:
-      - "5000:8080"
+      - "64670:8080"
+      - "64671:8081"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
     depends_on:
       - rabbitmq
+      - jaeger
   rabbitmq:
     image: rabbitmq:3-management
+    hostname: rabbitmq
     container_name: rabbitmq
     ports:
       - "5672:5672"
       - "15672:15672"
-    volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
-volumes:
-  rabbitmq_data:
-    driver: local
+  jaeger:
+    image: jaegertracing/opentelemetry-all-in-one:latest
+    ports:
+      - "16686:16686"
+      - "4317:4317"
