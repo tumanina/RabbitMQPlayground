@@ -12,6 +12,15 @@ services:
     depends_on:
       - rabbitmq
       - jaeger
+  rabbitmqplayground.consumer:
+    build:
+      context: .
+      dockerfile: RabbitMQPlayground.Consumer/Dockerfile
+    container_name: playground-consumer
+    restart: always
+    depends_on:
+      - rabbitmq
+      - jaeger
   rabbitmq:
     image: rabbitmq:3-management
     hostname: rabbitmq

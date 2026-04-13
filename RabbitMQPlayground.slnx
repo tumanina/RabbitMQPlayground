@@ -4,5 +4,6 @@
   </Project>
   <Project Path="RabbitMQPlayground.Api/RabbitMQPlayground.Api.csproj" />
   <Project Path="RabbitMQPlayground.Configuration/RabbitMQPlayground.Configuration.csproj" Id="9a499b2c-bfdd-435e-a56b-2110f510c080" />
+  <Project Path="RabbitMQPlayground.Consumer/RabbitMQPlayground.Consumer.csproj" Id="f10aac28-9287-406b-be0f-97c39b7d4edf" />
   <Project Path="RabbitMQPlayground.Producer/RabbitMQPlayground.Producer.csproj" Id="0869a1d2-b635-4447-8b64-7a84604d7fba" />
 </Solution>
