@@ -5,15 +5,10 @@ using System.Text;
 
 namespace RabbitMQPlayground.Producer;
 
-public class MessageProducer: IProducer, IDisposable
+public class MessageProducer(IOptions<RabbitMQConfiguration> configuration) : IProducer, IDisposable
 {
-    private readonly RabbitMQConfiguration _configuration;
+    private readonly RabbitMQConfiguration _configuration = configuration.Value;
     private IConnection? _connection;
-
-    public MessageProducer(IOptions<RabbitMQConfiguration> configuration)
-    {
-        _configuration = configuration.Value;
-    }
 
     public async Task SendMessage(string queueName, string message)
     {

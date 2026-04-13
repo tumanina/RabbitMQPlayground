@@ -14,12 +14,7 @@ configBuilder.SetBasePath(Directory.GetCurrentDirectory())
 var configuration = configBuilder.AddEnvironmentVariables()
     .Build();
 
-builder.Services.Configure<RabbitMQConfiguration>(configuration.GetSection(nameof(RabbitMQConfiguration)));
-builder.Services.AddSingleton<IProducer, MessageProducer>();
-builder.Services.AddScoped<MessageProducer>();
-
-builder.Services.AddControllers();
-builder.Services.AddSwaggerGen();
+builder.Logging.ClearProviders();
 
 var telemetryConfiguration = configuration.GetSection(nameof(TelemetryConfiguration)).Get<TelemetryConfiguration>();
 builder.Services.AddOpenTelemetry()
@@ -28,10 +23,21 @@ builder.Services.AddOpenTelemetry()
         .AddAspNetCoreInstrumentation()
         .AddHttpClientInstrumentation()
         .AddConsoleExporter()
-        .AddOtlpExporter(opts => { opts.Endpoint = new Uri(telemetryConfiguration.Endpoint); }))
-    .WithMetrics(metrics => metrics
-        .AddAspNetCoreInstrumentation()
-        .AddConsoleExporter());
+        .AddOtlpExporter(opts => { opts.Endpoint = new Uri(telemetryConfiguration.Endpoint); }));
+
+builder.Logging.AddOpenTelemetry(logging => {
+    logging.IncludeFormattedMessage = true;
+    logging.IncludeScopes = true;
+    logging.AttachLogsToActivityEvent();
+
+    logging.AddOtlpExporter(opts => { opts.Endpoint = new Uri(telemetryConfiguration.Endpoint); });
+});
+
+builder.Services.Configure<RabbitMQConfiguration>(configuration.GetSection(nameof(RabbitMQConfiguration)));
+builder.Services.AddSingleton<IProducer, MessageProducer>();
+
+builder.Services.AddControllers();
+builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
