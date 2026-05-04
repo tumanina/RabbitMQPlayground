@@ -21,6 +21,7 @@ services:
     depends_on:
       - rabbitmq
       - jaeger
+      - mongodb
   rabbitmq:
     image: rabbitmq:3-management
     hostname: rabbitmq
@@ -33,3 +34,8 @@ services:
     ports:
       - "16686:16686"
       - "4317:4317"
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017"

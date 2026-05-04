@@ -1,9 +1,8 @@
-﻿using Elastic.Extensions.Logging;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using OpenTelemetry;
+using MongoDB.Driver;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
@@ -45,11 +44,12 @@ builder.Logging.AddOpenTelemetry(logging => {
     logging.IncludeFormattedMessage = true;
     logging.IncludeScopes = true;
     logging.AttachLogsToActivityEvent();
-
     logging.AddOtlpExporter(opts => { opts.Endpoint = new Uri(telemetryConfiguration.Endpoint); });
 });
 
+builder.Services.Configure<MongodbConfiguration>(configuration.GetSection(nameof(MongodbConfiguration)));
 builder.Services.Configure<RabbitMQConfiguration>(configuration.GetSection(nameof(RabbitMQConfiguration)));
+builder.Services.AddSingleton<IMessagesContext, MessagesContext>();
 builder.Services.AddScoped<IMessageHandler, MessageHandler>();
 
 var host = builder.Build();
@@ -88,6 +88,10 @@ try
         }
         catch(Exception ex)
         {
+            using (Activity? activity = source.StartActivity("ConsumeMessage"))
+            {
+                activity?.AddEvent(new ActivityEvent("Exception " + ex.Message));
+            }
             logger.LogError(ex.Message);
         }
     };
