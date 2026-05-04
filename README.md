@@ -32,9 +32,7 @@ Open UI and open queue `test`, then Get messages and see text that was sent.
 
 <img width="1834" height="647" alt="image" src="https://github.com/user-attachments/assets/09c64780-7d75-4811-a723-bc90e68ea92a" />
 
-
 <img width="1916" height="643" alt="image" src="https://github.com/user-attachments/assets/c6b97742-0e10-4370-8eff-86fa2cc3ce8c" />
-
 
 ### Run in one-step with docker compose
 
@@ -51,3 +49,14 @@ Jaeger UI: http://localhost:16686/search
 Clean-up
 
 Run `docker-compose down`
+
+### Configure mongodb to store messages
+
+Run Compass from image
+`docker run -d -p 8080:8080 -e CW_MONGO_URI="mongodb://host.docker.internal:27017" haohanyang/compass-web`
+
+Open ui http://localhost:8080/
+
+Set database naem and collection name:
+<img width="1726" height="1063" alt="image" src="https://github.com/user-attachments/assets/fb84da66-caaa-4af2-b95c-131f3fe4f32e" />
+
