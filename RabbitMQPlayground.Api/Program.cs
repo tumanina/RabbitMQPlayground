@@ -1,3 +1,4 @@
+using MassTransit;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
@@ -14,34 +15,32 @@ configBuilder.SetBasePath(Directory.GetCurrentDirectory())
 var configuration = configBuilder.AddEnvironmentVariables()
     .Build();
 
-builder.Logging.ClearProviders();
-
-var telemetryConfiguration = configuration.GetSection(nameof(TelemetryConfiguration)).Get<TelemetryConfiguration>();
-builder.Services.AddOpenTelemetry()
-    .WithTracing(tracing => tracing
-        .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(builder.Environment.ApplicationName))
-        .AddAspNetCoreInstrumentation()
-        .AddHttpClientInstrumentation()
-        .AddConsoleExporter()
-        .AddOtlpExporter(opts => { opts.Endpoint = new Uri(telemetryConfiguration.Endpoint); }));
-
-builder.Logging.AddOpenTelemetry(logging => {
-    logging.IncludeFormattedMessage = true;
-    logging.IncludeScopes = true;
-    logging.AttachLogsToActivityEvent();
-
-    logging.AddOtlpExporter(opts => { opts.Endpoint = new Uri(telemetryConfiguration.Endpoint); });
-});
+RegisterTelemetry(builder, configuration);
 
 builder.Services.Configure<RabbitMQConfiguration>(configuration.GetSection(nameof(RabbitMQConfiguration)));
-builder.Services.AddSingleton<IProducer, MessageProducer>();
+var rabbitMqConfiguration = configuration.GetSection(nameof(RabbitMQConfiguration)).Get<RabbitMQConfiguration>();
+if (rabbitMqConfiguration.UseMassTransit)
+{
+    builder.Services.AddMassTransit(x =>
+    {
+        x.UsingRabbitMq((context, cfg) =>
+        {
+            cfg.Host(rabbitMqConfiguration.HostName);
+        });
+    });
+    builder.Services.AddScoped<IProducer, MessageWithMassTransitProducer>();
+}
+else
+{
+    builder.Services.AddSingleton<IProducer, MessageProducer>();
+}
 
 builder.Services.AddControllers();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-IEndpointConventionBuilder endpointConventionBuilder = app.MapOpenApi();
+var endpointConventionBuilder = app.MapOpenApi();
 app.UseSwagger();
 app.UseSwaggerUI(options =>
 {
@@ -56,3 +55,26 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+static void RegisterTelemetry(WebApplicationBuilder builder, IConfigurationRoot configuration)
+{
+    builder.Logging.ClearProviders();
+
+    var telemetryConfiguration = configuration.GetSection(nameof(TelemetryConfiguration)).Get<TelemetryConfiguration>();
+    builder.Services.AddOpenTelemetry()
+        .WithTracing(tracing => tracing
+            .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(builder.Environment.ApplicationName))
+            .AddAspNetCoreInstrumentation()
+            .AddHttpClientInstrumentation()
+            .AddConsoleExporter()
+            .AddOtlpExporter(opts => { opts.Endpoint = new Uri(telemetryConfiguration.Endpoint); }));
+
+    builder.Logging.AddOpenTelemetry(logging =>
+    {
+        logging.IncludeFormattedMessage = true;
+        logging.IncludeScopes = true;
+        logging.AttachLogsToActivityEvent();
+
+        logging.AddOtlpExporter(opts => { opts.Endpoint = new Uri(telemetryConfiguration.Endpoint); });
+    });
+}

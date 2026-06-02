@@ -11,12 +11,10 @@ public class MessageController(IProducer producer, ILogger<MessageController> lo
     private readonly ILogger<MessageController> _logger = logger;
 
     [HttpPost]
-    public async Task<IActionResult> SendMessage([FromBody] string message)
+    public async Task<IActionResult> SendMessage([FromBody] User user)
     {
-        await _producer.SendMessage("test", message);
-
-        _logger.LogInformation($"Sent message {message} at {DateTime.Now}");
-
+        await _producer.Publish(user);
+        _logger.LogInformation("Sent message");
         return Ok();
     }
 }

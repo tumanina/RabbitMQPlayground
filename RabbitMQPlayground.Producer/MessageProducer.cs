@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 using RabbitMQPlayground.Configuration;
-using System.Text;
+using System.Text.Json;
 
 namespace RabbitMQPlayground.Producer;
 
@@ -10,7 +10,7 @@ public class MessageProducer(IOptions<RabbitMQConfiguration> configuration) : IP
     private readonly RabbitMQConfiguration _configuration = configuration.Value;
     private IConnection? _connection;
 
-    public async Task SendMessage(string queueName, string message)
+    public async Task Publish(User user)
     {
         if (_connection == null)
         {
@@ -23,9 +23,7 @@ public class MessageProducer(IOptions<RabbitMQConfiguration> configuration) : IP
         }
 
         using var channel = await _connection.CreateChannelAsync();
-        await channel.QueueDeclareAsync(queue: queueName, durable: true, exclusive: false, autoDelete: false,
-            arguments: new Dictionary<string, object?> { { "x-queue-type", "quorum" } });
-        await channel.BasicPublishAsync(exchange: string.Empty, routingKey: queueName, body: Encoding.UTF8.GetBytes(message));
+        await channel.BasicPublishAsync(exchange: string.Empty, routingKey: "users", body: JsonSerializer.SerializeToUtf8Bytes(user));
     }
 
     public void Dispose()

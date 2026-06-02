@@ -28,24 +28,7 @@ builder.Logging.AddConsole();
 
 var telemetryConfiguration = configuration.GetSection(nameof(TelemetryConfiguration)).Get<TelemetryConfiguration>();
 
-var resource = builder.Environment.ApplicationName;
-const string activitySourceName = "ConsumerLogs";
-builder.Services.AddOpenTelemetry()
-     .ConfigureResource(res => res
-        .AddService(resource))
-    .WithTracing(tracing => tracing
-        .AddSource(activitySourceName)
-        .AddAspNetCoreInstrumentation()
-        .AddHttpClientInstrumentation()
-        .AddConsoleExporter()
-        .AddOtlpExporter(opts => { opts.Endpoint = new Uri(telemetryConfiguration.Endpoint); }));
-
-builder.Logging.AddOpenTelemetry(logging => {
-    logging.IncludeFormattedMessage = true;
-    logging.IncludeScopes = true;
-    logging.AttachLogsToActivityEvent();
-    logging.AddOtlpExporter(opts => { opts.Endpoint = new Uri(telemetryConfiguration.Endpoint); });
-});
+string activitySourceName = RegisterTelemetry(builder, telemetryConfiguration);
 
 builder.Services.Configure<MongodbConfiguration>(configuration.GetSection(nameof(MongodbConfiguration)));
 builder.Services.Configure<RabbitMQConfiguration>(configuration.GetSection(nameof(RabbitMQConfiguration)));
@@ -86,7 +69,7 @@ try
             }
             await channel.BasicAckAsync(deliveryTag: ea.DeliveryTag, multiple: false);
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             using (Activity? activity = source.StartActivity("ConsumeMessage"))
             {
@@ -106,3 +89,27 @@ catch (RabbitMQ.Client.Exceptions.OperationInterruptedException ex)
 }
 
 host.Run();
+
+static string RegisterTelemetry(HostApplicationBuilder builder, TelemetryConfiguration? telemetryConfiguration)
+{
+    var resource = builder.Environment.ApplicationName;
+    const string activitySourceName = "ConsumerLogs";
+    builder.Services.AddOpenTelemetry()
+         .ConfigureResource(res => res
+            .AddService(resource))
+        .WithTracing(tracing => tracing
+            .AddSource(activitySourceName)
+            .AddAspNetCoreInstrumentation()
+            .AddHttpClientInstrumentation()
+            .AddConsoleExporter()
+            .AddOtlpExporter(opts => { opts.Endpoint = new Uri(telemetryConfiguration.Endpoint); }));
+
+    builder.Logging.AddOpenTelemetry(logging =>
+    {
+        logging.IncludeFormattedMessage = true;
+        logging.IncludeScopes = true;
+        logging.AttachLogsToActivityEvent();
+        logging.AddOtlpExporter(opts => { opts.Endpoint = new Uri(telemetryConfiguration.Endpoint); });
+    });
+    return activitySourceName;
+}
