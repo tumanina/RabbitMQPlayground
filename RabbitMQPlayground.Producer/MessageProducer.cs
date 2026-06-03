@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 using RabbitMQPlayground.Configuration;
+using RabbitMQPlayground.Contracts;
 using System.Text.Json;
 
 namespace RabbitMQPlayground.Producer;

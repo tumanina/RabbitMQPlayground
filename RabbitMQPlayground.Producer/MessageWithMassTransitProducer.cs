@@ -1,5 +1,6 @@
 ﻿using MassTransit;
 using Microsoft.Extensions.Logging;
+using RabbitMQPlayground.Contracts;
 
 namespace RabbitMQPlayground.Producer;
 

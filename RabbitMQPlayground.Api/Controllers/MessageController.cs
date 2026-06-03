@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using RabbitMQPlayground.Contracts;
 using RabbitMQPlayground.Producer;
 
 namespace RabbitMQPlayground.Api.Controllers;

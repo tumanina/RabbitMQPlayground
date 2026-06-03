@@ -1,4 +1,6 @@
-﻿namespace RabbitMQPlayground.Producer;
+﻿using RabbitMQPlayground.Contracts;
+
+namespace RabbitMQPlayground.Producer;
 
 public interface IProducer
 {
