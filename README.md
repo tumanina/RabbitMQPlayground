@@ -1,5 +1,11 @@
 # RabbitMQPlayground
 
+RabbitMQ is a message broker that enables asynchronous communication between services. Messages are published to exchanges, which route them to queues; for example, a fanout exchange broadcasts a message to all bound queues.
+
+This project also contain examples of using MassTransit.
+
+MassTransit is a .NET service bus framework built on top of RabbitMQ. It simplifies message publishing and consumption by handling serialization, routing, retries, error queues, and consumer registration, allowing developers to focus on business logic instead of messaging infrastructure.
+
 ### How to run RabbitMQ locally from docker image
 
 `docker run -d --name playground -p 5672:5672 -p 15672:15672 rabbitmq:3-management`
