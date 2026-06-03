@@ -1,8 +1,8 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using MassTransit;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using MongoDB.Driver;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
@@ -37,54 +37,73 @@ builder.Services.AddScoped<IMessageHandler, MessageHandler>();
 
 var host = builder.Build();
 
-var config = configuration.GetSection(nameof(RabbitMQConfiguration)).Get<RabbitMQConfiguration>();
+var rabbitMQConfiguration = configuration.GetSection(nameof(RabbitMQConfiguration)).Get<RabbitMQConfiguration>();
 var logger = host.Services.GetRequiredService<ILogger<Program>>();
 
-var factory = new ConnectionFactory
-{
-    HostName = config?.HostName ?? "localhost",
-    Port = config?.Port ?? 5672
-};
 
-var handler = host.Services.GetRequiredService<IMessageHandler>();
-using var connection = await factory.CreateConnectionAsync();
-using var source = new ActivitySource(activitySourceName);
-using var channel = await connection.CreateChannelAsync();
-try
+if (rabbitMQConfiguration?.UseMassTransit ?? false)
 {
-    await channel.QueueDeclarePassiveAsync(queue: "test");
-
-    var consumer = new AsyncEventingBasicConsumer(channel);
-    consumer.ReceivedAsync += async (ch, ea) =>
+    builder.Services.AddMassTransit(x =>
     {
-        var body = ea.Body.ToArray();
-        var message = Encoding.UTF8.GetString(body);
+        x.AddConsumer<UserConsumer>();
 
-        try
+        x.UsingRabbitMq((context, cfg) =>
         {
-            await handler.Handle(message);
-            using (Activity? activity = source.StartActivity("ConsumeMessage"))
-            {
-                activity?.AddEvent(new ActivityEvent("Handled message " + message));
-            }
-            await channel.BasicAckAsync(deliveryTag: ea.DeliveryTag, multiple: false);
-        }
-        catch (Exception ex)
-        {
-            using (Activity? activity = source.StartActivity("ConsumeMessage"))
-            {
-                activity?.AddEvent(new ActivityEvent("Exception " + ex.Message));
-            }
-            logger.LogError(ex.Message);
-        }
-    };
-    await channel.BasicConsumeAsync("test", false, consumer);
+            cfg.Host(rabbitMQConfiguration?.HostName ?? "localhost");
+
+            cfg.ConfigureEndpoints(context);
+        });
+    });
+
 }
-catch (RabbitMQ.Client.Exceptions.OperationInterruptedException ex)
+else
 {
-    using (Activity? activity = source.StartActivity("RabbitMQException"))
+    var factory = new ConnectionFactory
     {
-        activity?.AddEvent(new ActivityEvent(ex.Message));
+        HostName = rabbitMQConfiguration?.HostName ?? "localhost",
+        Port = rabbitMQConfiguration?.Port ?? 5672
+    };
+
+    var handler = host.Services.GetRequiredService<IMessageHandler>();
+    using var connection = await factory.CreateConnectionAsync();
+    using var source = new ActivitySource(activitySourceName);
+    using var channel = await connection.CreateChannelAsync();
+    try
+    {
+        await channel.QueueDeclarePassiveAsync(queue: "test");
+
+        var consumer = new AsyncEventingBasicConsumer(channel);
+        consumer.ReceivedAsync += async (ch, ea) =>
+        {
+            var body = ea.Body.ToArray();
+            var message = Encoding.UTF8.GetString(body);
+
+            try
+            {
+                await handler.Handle(message);
+                using (Activity? activity = source.StartActivity("ConsumeMessage"))
+                {
+                    activity?.AddEvent(new ActivityEvent("Handled message " + message));
+                }
+                await channel.BasicAckAsync(deliveryTag: ea.DeliveryTag, multiple: false);
+            }
+            catch (Exception ex)
+            {
+                using (Activity? activity = source.StartActivity("ConsumeMessage"))
+                {
+                    activity?.AddEvent(new ActivityEvent("Exception " + ex.Message));
+                }
+                logger.LogError(ex.Message);
+            }
+        };
+        await channel.BasicConsumeAsync("test", false, consumer);
+    }
+    catch (RabbitMQ.Client.Exceptions.OperationInterruptedException ex)
+    {
+        using (Activity? activity = source.StartActivity("RabbitMQException"))
+        {
+            activity?.AddEvent(new ActivityEvent(ex.Message));
+        }
     }
 }
 

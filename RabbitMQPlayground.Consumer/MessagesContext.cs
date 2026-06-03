@@ -1,11 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
-using MongoDB.Driver.Search;
 using RabbitMQPlayground.Configuration;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace RabbitMQPlayground.Consumer
 {
