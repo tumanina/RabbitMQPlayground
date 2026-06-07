@@ -10,8 +10,7 @@ MassTransit is a .NET service bus framework built on top of RabbitMQ. It simplif
 <img width="710" height="275" alt="image" src="https://github.com/user-attachments/assets/072d76f2-7f01-4e4d-812e-668dc5b2c22d" />
 
 
-
-### How to run RabbitMQ locally from docker image
+## How to run RabbitMQ locally from docker image
 
 `docker run -d --name playground -p 5672:5672 -p 15672:15672 rabbitmq:3-management`
 
@@ -19,25 +18,43 @@ Management UI: http://localhost:15672/
 
 Defult username/password: guest/guest
 
-<img width="1851" height="1039" alt="image" src="https://github.com/user-attachments/assets/18f26338-30ee-4ef7-9b14-c821b9532308" />
+<img width="926" height="520" alt="image" src="https://github.com/user-attachments/assets/18f26338-30ee-4ef7-9b14-c821b9532308" />
 
 More information here: https://www.rabbitmq.com/docs/management
 
-### How to send first message
+## How to send first message
 
-Run Api project and open `https://localhost:7245/swagger`and send Post `/messages` with text in body.
+Run Api project and open `https://localhost:7245/swagger`and send Post `/users` with text in body.
+
+<img width="936" height="470" alt="image" src="https://github.com/user-attachments/assets/7f869eb3-6c10-4786-b63e-ffdecdf465fd" />
+
+
+### Exchange (MassTransit)
+
+Open UI and tab Exchanges, find `RabbitMQPlayground.Contracts:User`
+
+<img width="927" height="450" alt="image" src="https://github.com/user-attachments/assets/c4ae3821-be56-4c00-b5ee-9f746e1a2aa9" />
+
+This exchange does not have binding, it can be done manually or it will be done automatically after consumer starts (queue User will be created automatically).
+
+<img width="924" height="342" alt="image" src="https://github.com/user-attachments/assets/01cc9b8e-e507-42bd-a432-1607732e10cd" />
+
+<img width="927" height="431" alt="image" src="https://github.com/user-attachments/assets/50afb2d2-9b20-455e-a6a2-fb864e2c3eeb" />
+
+
+### Queue
 
 Open UI and open queue `test`, then Get messages and see text that was sent.
 
-<img width="1910" height="839" alt="image" src="https://github.com/user-attachments/assets/7170fed0-a13d-434e-b4f5-bdb97768337a" />
+<img width="945" height="420" alt="image" src="https://github.com/user-attachments/assets/7170fed0-a13d-434e-b4f5-bdb97768337a" />
 
-<img width="1873" height="1039" alt="image" src="https://github.com/user-attachments/assets/73337ab1-bfc5-4524-b8fa-6cd9e7ae6e5c" />
+<img width="932" height="520" alt="image" src="https://github.com/user-attachments/assets/73337ab1-bfc5-4524-b8fa-6cd9e7ae6e5c" />
 
 ### Run in one-step with docker compose
 
 Run `docker-compose up`
 
-<img width="1318" height="719" alt="image" src="https://github.com/user-attachments/assets/7d1715bf-db8a-4777-93c1-2f85b6c7c043" />
+<img width="659" height="360" alt="image" src="https://github.com/user-attachments/assets/7d1715bf-db8a-4777-93c1-2f85b6c7c043" />
 
 API: https://localhost:64671/swagger/index.html
 
@@ -56,5 +73,5 @@ Run Compass from image
 Open ui http://localhost:8080/
 
 Set database naem and collection name:
-<img width="1726" height="1063" alt="image" src="https://github.com/user-attachments/assets/fb84da66-caaa-4af2-b95c-131f3fe4f32e" />
+<img width="863" height="531" alt="image" src="https://github.com/user-attachments/assets/fb84da66-caaa-4af2-b95c-131f3fe4f32e" />
 
