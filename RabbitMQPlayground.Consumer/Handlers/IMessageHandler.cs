@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace RabbitMQPlayground.Consumer;
+namespace RabbitMQPlayground.Consumer.Handlers;
 
 public interface IMessageHandler
 {

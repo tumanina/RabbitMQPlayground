@@ -1,7 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
 using MongoDB.Bson;
+using RabbitMQPlayground.Consumer.Database;
 
-namespace RabbitMQPlayground.Consumer
+namespace RabbitMQPlayground.Consumer.Handlers
 {
     public class MessageHandler(ILogger<MessageHandler> logger, IMessagesContext database) : IMessageHandler
     {

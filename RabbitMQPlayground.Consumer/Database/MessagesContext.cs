@@ -3,7 +3,7 @@ using MongoDB.Bson;
 using MongoDB.Driver;
 using RabbitMQPlayground.Configuration;
 
-namespace RabbitMQPlayground.Consumer
+namespace RabbitMQPlayground.Consumer.Database
 {
     public class MessagesContext: IMessagesContext
     {

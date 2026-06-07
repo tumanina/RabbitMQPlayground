@@ -5,11 +5,11 @@ using RabbitMQPlayground.Producer;
 namespace RabbitMQPlayground.Api.Controllers;
 
 [ApiController]
-[Route("messages")]
-public class MessageController(IProducer producer, ILogger<MessageController> logger) : ControllerBase
+[Route("users")]
+public class UserController(IProducer producer, ILogger<UserController> logger) : ControllerBase
 {
     private readonly IProducer _producer = producer;
-    private readonly ILogger<MessageController> _logger = logger;
+    private readonly ILogger<UserController> _logger = logger;
 
     [HttpPost]
     public async Task<IActionResult> SendMessage([FromBody] User user)

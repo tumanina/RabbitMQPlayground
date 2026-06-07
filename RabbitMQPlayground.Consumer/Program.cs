@@ -3,11 +3,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using RabbitMQ.Client;
-using RabbitMQ.Client.Events;
 using RabbitMQPlayground.Configuration;
-using RabbitMQPlayground.Consumer;
-using System.Text;
+using RabbitMQPlayground.Consumer.Consumers;
+using RabbitMQPlayground.Consumer.Database;
+using RabbitMQPlayground.Consumer.Handlers;
 
 var configBuilder = new ConfigurationBuilder();
 
@@ -33,58 +32,20 @@ if (rabbitMQConfiguration?.UseMassTransit ?? false)
 {
     builder.Services.AddMassTransit(x =>
     {
-        x.AddConsumer<UserConsumer>();
+        x.AddConsumer<ConsumerWithMassTransit>();
 
         x.UsingRabbitMq((context, cfg) =>
         {
             cfg.Host(rabbitMQConfiguration?.HostName ?? "localhost");
-
             cfg.ConfigureEndpoints(context);
         });
     });
-
+}
+else
+{
+    builder.Services.AddHostedService<UsersQueueConsumer>();
 }
 
 var host = builder.Build();
 
-if (!rabbitMQConfiguration.UseMassTransit)
-{
-    var logger = host.Services.GetRequiredService<ILogger<Program>>();
-    var factory = new ConnectionFactory
-    {
-        HostName = rabbitMQConfiguration?.HostName ?? "localhost",
-        Port = rabbitMQConfiguration?.Port ?? 5672
-    };
-
-    var handler = host.Services.GetRequiredService<IMessageHandler>();
-    using var connection = await factory.CreateConnectionAsync();
-    using var channel = await connection.CreateChannelAsync();
-    try
-    {
-        await channel.QueueDeclarePassiveAsync(queue: "test");
-
-        var consumer = new AsyncEventingBasicConsumer(channel);
-        consumer.ReceivedAsync += async (ch, ea) =>
-        {
-            var body = ea.Body.ToArray();
-            var message = Encoding.UTF8.GetString(body);
-
-            try
-            {
-                await handler.Handle(message);
-                await channel.BasicAckAsync(deliveryTag: ea.DeliveryTag, multiple: false);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex.Message);
-            }
-        };
-        await channel.BasicConsumeAsync("test", false, consumer);
-    }
-    catch (RabbitMQ.Client.Exceptions.OperationInterruptedException ex)
-    {
-        logger.LogError(ex.Message);
-    }
-}
-
-host.Run();
+await host.RunAsync();

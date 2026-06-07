@@ -1,10 +1,11 @@
 ﻿using MassTransit;
+using RabbitMQPlayground.Consumer.Handlers;
 using RabbitMQPlayground.Contracts;
 using System.Text.Json;
 
-namespace RabbitMQPlayground.Consumer
+namespace RabbitMQPlayground.Consumer.Consumers
 {
-    public class UserConsumer(IMessageHandler messageHandler) : IConsumer<User>
+    public class ConsumerWithMassTransit(IMessageHandler messageHandler) : IConsumer<User>
     {
         private readonly IMessageHandler _messageHandler = messageHandler;
 

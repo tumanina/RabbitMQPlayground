@@ -11,7 +11,6 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
     depends_on:
       - rabbitmq
-      - jaeger
   rabbitmqplayground.consumer:
     build:
       context: .
@@ -20,7 +19,6 @@ services:
     restart: always
     depends_on:
       - rabbitmq
-      - jaeger
       - mongodb
   rabbitmq:
     image: rabbitmq:3-management
@@ -29,11 +27,6 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
-  jaeger:
-    image: jaegertracing/opentelemetry-all-in-one:latest
-    ports:
-      - "16686:16686"
-      - "4317:4317"
   mongodb:
     image: mongo:latest
     container_name: mongodb
