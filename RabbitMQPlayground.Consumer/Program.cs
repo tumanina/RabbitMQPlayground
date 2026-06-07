@@ -20,8 +20,6 @@ var builder = Host.CreateApplicationBuilder(args);
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 
-var telemetryConfiguration = configuration.GetSection(nameof(TelemetryConfiguration)).Get<TelemetryConfiguration>();
-
 builder.Services.Configure<MongodbConfiguration>(configuration.GetSection(nameof(MongodbConfiguration)));
 builder.Services.Configure<RabbitMQConfiguration>(configuration.GetSection(nameof(RabbitMQConfiguration)));
 builder.Services.AddSingleton<IMessagesContext, MessagesContext>();
